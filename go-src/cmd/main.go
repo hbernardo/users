@@ -8,9 +8,9 @@ import (
 )
 
 type serviceConfig struct {
-	ServerPort      int    `env:"PORT" envDefault:"8080"`
+	HealthCheckPort int    `env:"HEALTH_CHECK_PORT,required"`
+	ServerPort      int    `env:"PORT,required"`
 	ServerMode      string `env:"MODE" envDefault:"release"`
-	HealthCheckPort int    `env:"HEALTH_CHECK_PORT" envDefault:"8081"`
 }
 
 func getConfig() (*serviceConfig, error) {
