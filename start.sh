@@ -27,5 +27,6 @@ printf "\n# Accessing the service via K8s port-forwarding\n"
 sleep 10 # making sure everything is updated inside the cluster
 export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=users,app.kubernetes.io/instance=users-api-http-server" -o jsonpath="{.items[0].metadata.name}")
 export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
-printf "Visit http://127.0.0.1:8080 to use your application"
+printf "Visit http://127.0.0.1:8080 to use your application\n"
+kubectl logs $POD_NAME -f & # follow the logs
 kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
