@@ -3,10 +3,7 @@
 ## Running on local machine
 
 ### Requirements (with tested versions)
-- Bash (for executing the shell script)
 - Docker client (20.10.11)
-- Git (2.25.0)
-- Golang (1.17.3)
 - Minikube (1.24.0)
 - kubernetes-cli (kubectl) client (1.23.0)
 - Helm (3.7.2)
