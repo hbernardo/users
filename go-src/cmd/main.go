@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"net/http"
 
 	"github.com/caarlos0/env"
 )
 
 type serviceConfig struct {
-	ServerPort int    `env:"PORT" envDefault:"8080"`
-	ServerMode string `env:"MODE" envDefault:"release"`
+	ServerPort      int    `env:"PORT" envDefault:"8080"`
+	ServerMode      string `env:"MODE" envDefault:"release"`
+	HealthCheckPort int    `env:"HEALTH_CHECK_PORT" envDefault:"8081"`
 }
 
 func getConfig() (*serviceConfig, error) {
@@ -21,11 +22,26 @@ func getConfig() (*serviceConfig, error) {
 	return config, nil
 }
 
+func live(w http.ResponseWriter, req *http.Request) {
+	fmt.Fprintf(w, "live\n")
+}
+
+func ready(w http.ResponseWriter, req *http.Request) {
+	fmt.Fprintf(w, "ready\n")
+}
+
 func main() {
 	config, err := getConfig()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("server is running with config %+v\n", config)
-	time.Sleep(1800 * time.Minute) // 30 minutes
+
+	go func() {
+		http.HandleFunc("/health/live", live)
+		http.HandleFunc("/health/ready", ready)
+
+		http.ListenAndServe(fmt.Sprintf(":%d", config.HealthCheckPort), nil)
+	}()
+
+	http.ListenAndServe(fmt.Sprintf(":%d", config.ServerPort), nil)
 }
