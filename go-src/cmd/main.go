@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,9 +13,13 @@ import (
 )
 
 type serviceConfig struct {
-	HealthCheckPort int    `env:"HEALTH_CHECK_PORT,required"`
-	ServerPort      int    `env:"PORT,required"`
-	LogLevel        string `env:"LOG_LEVEL" envDefault:"error"`
+	ServerPort int `env:"PORT,required"`
+
+	HealthCheckPort    int    `env:"HEALTH_CHECK_PORT,required"`
+	LivenessProbePath  string `env:"LIVENESS_PROBE_PATH,required"`
+	ReadinessProbePath string `env:"READINESS_PROBE_PATH,required"`
+
+	LogLevel string `env:"LOG_LEVEL" envDefault:"error"`
 }
 
 func getServiceConfig() (*serviceConfig, error) {
@@ -66,22 +68,17 @@ func runHTTP(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// TODO: test, should be refactored
-	go func() {
-		http.HandleFunc("/health/live", func(w http.ResponseWriter, req *http.Request) {
-			fmt.Fprintf(w, "live\n")
-		})
-		http.HandleFunc("/health/ready", func(w http.ResponseWriter, req *http.Request) {
-			fmt.Fprintf(w, "ready\n")
-		})
-
-		http.ListenAndServe(fmt.Sprintf(":%d", config.HealthCheckPort), nil)
-	}()
-
-	httpSrv := srv.NewHTTPServer(config.ServerPort)
+	// Default HTTP Server
+	httpSrv := srv.NewHTTPServer(config.ServerPort, nil)
 	defer httpSrv.Close(ctx)
-
 	httpSrv.ListenAndServe()
+
+	// Health Server (for liveness and readiness probes)
+	healthSrv := srv.NewHTTPServer(config.HealthCheckPort,
+		srv.NewHealthServerHandler(config.LivenessProbePath, config.ReadinessProbePath),
+	)
+	defer healthSrv.Close(ctx)
+	healthSrv.ListenAndServe()
 
 	sig := waitSignal() // blocking until signal
 	log.WithFields(log.Fields{
@@ -97,7 +94,6 @@ func configureLog(logLevel string) error {
 		return err
 	}
 	log.SetLevel(lv)
-
 	log.SetFormatter(&log.JSONFormatter{})
 
 	return nil
@@ -106,6 +102,7 @@ func configureLog(logLevel string) error {
 func waitSignal() os.Signal {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig,
+		os.Interrupt,
 		syscall.SIGHUP,
 		syscall.SIGINT,
 		syscall.SIGTERM,

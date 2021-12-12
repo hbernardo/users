@@ -47,12 +47,12 @@ spec:
           livenessProbe:
             initialDelaySeconds: {{ .Values.health.initialDelaySeconds }}
             httpGet:
-              path: /health/live
+              path: {{ .Values.health.livenessProbePath }}
               port: health
           readinessProbe:
             initialDelaySeconds: {{ .Values.health.initialDelaySeconds }}
             httpGet:
-              path: /health/ready
+              path: {{ .Values.health.readinessProbePath }}
               port: health
           env:
             {{- range $key, $value := .Values.environment }}

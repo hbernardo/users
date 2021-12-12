@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -15,10 +16,11 @@ type (
 )
 
 // NewHTTPServer creates a new HTTP server
-func NewHTTPServer(port int) *httpServer {
+func NewHTTPServer(port int, handler http.Handler) *httpServer {
 	return &httpServer{
 		srv: &http.Server{
-			Addr: fmt.Sprintf(":%d", port),
+			Addr:    fmt.Sprintf(":%d", port),
+			Handler: handler,
 		},
 	}
 }
@@ -32,5 +34,7 @@ func (h *httpServer) ListenAndServe() {
 
 // Close closes the HTTP server
 func (h *httpServer) Close(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 	return h.srv.Shutdown(ctx)
 }

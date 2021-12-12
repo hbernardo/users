@@ -1,6 +1,6 @@
 # Users API (HTTP Server)
 
-## Running on local machine
+## Running the system locally
 
 ### Requirements (with tested versions)
 - Docker client (20.10.11)
@@ -8,7 +8,7 @@
 - kubernetes-cli (kubectl) client (1.23.0)
 - Helm (3.7.2)
 
-### Single command
+### Usage
 
 ```console
 ./start.sh
@@ -51,4 +51,27 @@ export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpat
 echo "Visit http://127.0.0.1:8080 to use your application\n"
 kubectl logs $POD_NAME -f & # follow the logs
 kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
+```
+
+## Running only the application
+
+### Requirements (with tested versions)
+- Golang (1.17.3)
+
+### Usage
+```console
+# Exporting required variables
+export PORT=8080
+export HEALTH_CHECK_PORT=8081
+export LIVENESS_PROBE_PATH=/health/live
+export READINESS_PROBE_PATH=/health/ready
+export LOG_LEVEL=debug
+
+# Building the application
+cd go-src
+go build -o ../app ./cmd
+cd -
+
+# Running the HTTP server
+./app http
 ```

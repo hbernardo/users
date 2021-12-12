@@ -36,10 +36,14 @@ http:
 health:
   port: 8081
   initialDelaySeconds: 5
+  livenessProbePath: /health/live
+  readinessProbePath: /health/ready
 
 environment:
-  HEALTH_CHECK_PORT: 8081
   PORT: 8080
+  HEALTH_CHECK_PORT: 8081
+  LIVENESS_PROBE_PATH: /health/live
+  READINESS_PROBE_PATH: /health/ready
   LOG_LEVEL: error
 
 
