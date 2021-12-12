@@ -44,10 +44,13 @@ environment:
   HEALTH_CHECK_PORT: 8081
   LIVENESS_PROBE_PATH: /health/live
   READINESS_PROBE_PATH: /health/ready
-  LOG_LEVEL: error
   RATE_LIMIT_MAX_FREQUENCY: 3
   RATE_LIMIT_BURST_SIZE: 5
   RATE_LIMIT_MEMORY_DURATION: "1m"
+  CORS_ALLOW_ORIGIN: http://localhost:8080
+  CORS_ALLOW_METHODS: OPTIONS,GET,HEAD
+  CORS_ALLOW_HEADERS: Origin,Content-Length,Content-Type,Accept,Accept-Encoding,X-Real-Ip,X-Forwarded-For
+  LOG_LEVEL: error
 
 
 

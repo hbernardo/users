@@ -32,6 +32,10 @@ type serviceConfig struct {
 	RateLimitBurstSize      int           `env:"RATE_LIMIT_BURST_SIZE,required"`
 	RateLimitMemoryDuration time.Duration `env:"RATE_LIMIT_MEMORY_DURATION,required"`
 
+	CORSAllowOrigin  string   `env:"CORS_ALLOW_ORIGIN,required"`
+	CORSAllowMethods []string `env:"CORS_ALLOW_METHODS,required"`
+	CORSAllowHeaders []string `env:"CORS_ALLOW_HEADERS,required"`
+
 	LogLevel string `env:"LOG_LEVEL" envDefault:"error"`
 }
 
@@ -93,6 +97,11 @@ func runHTTP(cmd *cobra.Command, args []string) error {
 			lib.NewUsersService(
 				infra.NewUsersRepo(usersData),
 			),
+		),
+		srv.CORSMiddleware(
+			config.CORSAllowOrigin,
+			config.CORSAllowMethods,
+			config.CORSAllowHeaders,
 		),
 		srv.RateLimiterMiddleware(
 			config.RateLimitMaxFrequency,

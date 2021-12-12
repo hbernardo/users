@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -34,6 +35,22 @@ func PanicRecoveryMiddleware(next http.Handler) http.Handler {
 		}()
 		next.ServeHTTP(w, r)
 	})
+}
+
+func CORSMiddleware(allowOrigin string, allowMethods []string, allowHeaders []string) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Access-Control-Allow-Origin", allowOrigin)
+			w.Header().Set("Access-Control-Allow-Methods", strings.Join(allowMethods, ","))
+			w.Header().Set("Access-Control-Allow-Headers", strings.Join(allowHeaders, ","))
+
+			if r.Method == http.MethodOptions {
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 func RateLimiterMiddleware(maxFrequency int, burstSize int, memoryDuration time.Duration) func(next http.Handler) http.Handler {

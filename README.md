@@ -68,6 +68,9 @@ export READINESS_PROBE_PATH=/health/ready
 export RATE_LIMIT_MAX_FREQUENCY=3
 export RATE_LIMIT_BURST_SIZE=5
 export RATE_LIMIT_MEMORY_DURATION=1m
+export CORS_ALLOW_ORIGIN=http://localhost:8080
+export CORS_ALLOW_METHODS=OPTIONS,GET,HEAD
+export CORS_ALLOW_HEADERS=*
 export LOG_LEVEL=debug
 
 # Building the application
