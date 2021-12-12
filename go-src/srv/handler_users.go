@@ -27,7 +27,7 @@ func NewUsersHandler(usersSvc usersService) *usersHandler {
 	handler := http.NewServeMux()
 
 	h := &usersHandler{
-		panicRecover(handler),
+		handler,
 		usersSvc,
 	}
 

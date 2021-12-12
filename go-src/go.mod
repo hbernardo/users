@@ -6,6 +6,7 @@ require (
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
+	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 )
 
 require (

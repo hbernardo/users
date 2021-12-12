@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/caarlos0/env"
 	"github.com/hbernardo/users/go-src/infra"
@@ -26,6 +27,10 @@ type serviceConfig struct {
 	HealthCheckPort    int    `env:"HEALTH_CHECK_PORT,required"`
 	LivenessProbePath  string `env:"LIVENESS_PROBE_PATH,required"`
 	ReadinessProbePath string `env:"READINESS_PROBE_PATH,required"`
+
+	RateLimitMaxFrequency   int           `env:"RATE_LIMIT_MAX_FREQUENCY,required"`
+	RateLimitBurstSize      int           `env:"RATE_LIMIT_BURST_SIZE,required"`
+	RateLimitMemoryDuration time.Duration `env:"RATE_LIMIT_MEMORY_DURATION,required"`
 
 	LogLevel string `env:"LOG_LEVEL" envDefault:"error"`
 }
@@ -89,6 +94,12 @@ func runHTTP(cmd *cobra.Command, args []string) error {
 				infra.NewUsersRepo(usersData),
 			),
 		),
+		srv.RateLimiterMiddleware(
+			config.RateLimitMaxFrequency,
+			config.RateLimitBurstSize,
+			config.RateLimitMemoryDuration,
+		),
+		srv.PanicRecoveryMiddleware,
 	)
 	defer httpSrv.Close(ctx)
 	httpSrv.ListenAndServe()

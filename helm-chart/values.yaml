@@ -45,6 +45,9 @@ environment:
   LIVENESS_PROBE_PATH: /health/live
   READINESS_PROBE_PATH: /health/ready
   LOG_LEVEL: error
+  RATE_LIMIT_MAX_FREQUENCY: 3
+  RATE_LIMIT_BURST_SIZE: 5
+  RATE_LIMIT_MEMORY_DURATION: "1m"
 
 
 

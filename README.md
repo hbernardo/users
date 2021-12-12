@@ -65,6 +65,9 @@ export PORT=8080
 export HEALTH_CHECK_PORT=8081
 export LIVENESS_PROBE_PATH=/health/live
 export READINESS_PROBE_PATH=/health/ready
+export RATE_LIMIT_MAX_FREQUENCY=3
+export RATE_LIMIT_BURST_SIZE=5
+export RATE_LIMIT_MEMORY_DURATION=1m
 export LOG_LEVEL=debug
 
 # Building the application

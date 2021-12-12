@@ -16,11 +16,11 @@ type (
 )
 
 // NewHTTPServer creates a new HTTP server
-func NewHTTPServer(port int, handler http.Handler) *httpServer {
+func NewHTTPServer(port int, handler http.Handler, middlewares ...(func(next http.Handler) http.Handler)) *httpServer {
 	return &httpServer{
 		srv: &http.Server{
 			Addr:    fmt.Sprintf(":%d", port),
-			Handler: handler,
+			Handler: withMiddlewares(handler, middlewares...),
 		},
 	}
 }
