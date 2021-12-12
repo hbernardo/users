@@ -1,19 +1,18 @@
 package srv
 
 import (
-	"fmt"
 	"net/http"
 )
 
-func NewHealthServerHandler(livenessProbePath, readinessProbePath string) http.Handler {
+func NewHealthHandler(livenessProbePath, readinessProbePath string) http.Handler {
 	handler := http.NewServeMux()
 
 	handler.HandleFunc(livenessProbePath, func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(w, "live")
+		w.WriteHeader(http.StatusOK)
 	})
 
 	handler.HandleFunc(readinessProbePath, func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(w, "ready")
+		w.WriteHeader(http.StatusOK)
 	})
 
 	return handler

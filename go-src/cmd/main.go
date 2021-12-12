@@ -2,14 +2,22 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"io/ioutil"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/caarlos0/env"
+	"github.com/hbernardo/users/go-src/infra"
+	"github.com/hbernardo/users/go-src/lib"
 	"github.com/hbernardo/users/go-src/srv"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+)
+
+const (
+	usersDataFilePath = "data/users.json"
 )
 
 type serviceConfig struct {
@@ -68,14 +76,26 @@ func runHTTP(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	// Reading users data file
+	usersData, err := readUsersDataJSONFile()
+	if err != nil {
+		return err
+	}
+
 	// Default HTTP Server
-	httpSrv := srv.NewHTTPServer(config.ServerPort, nil)
+	httpSrv := srv.NewHTTPServer(config.ServerPort,
+		srv.NewUsersHandler(
+			lib.NewUsersService(
+				infra.NewUsersRepo(usersData),
+			),
+		),
+	)
 	defer httpSrv.Close(ctx)
 	httpSrv.ListenAndServe()
 
 	// Health Server (for liveness and readiness probes)
 	healthSrv := srv.NewHTTPServer(config.HealthCheckPort,
-		srv.NewHealthServerHandler(config.LivenessProbePath, config.ReadinessProbePath),
+		srv.NewHealthHandler(config.LivenessProbePath, config.ReadinessProbePath),
 	)
 	defer healthSrv.Close(ctx)
 	healthSrv.ListenAndServe()
@@ -97,6 +117,28 @@ func configureLog(logLevel string) error {
 	log.SetFormatter(&log.JSONFormatter{})
 
 	return nil
+}
+
+func readUsersDataJSONFile() ([]lib.User, error) {
+	jsonFile, err := os.Open(usersDataFilePath)
+	if err != nil {
+		return nil, err
+	}
+	defer jsonFile.Close()
+
+	jsonBytes, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		return nil, err
+	}
+
+	var usersData []lib.User
+
+	err = json.Unmarshal(jsonBytes, &usersData)
+	if err != nil {
+		return nil, err
+	}
+
+	return usersData, nil
 }
 
 func waitSignal() os.Signal {
