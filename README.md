@@ -32,7 +32,7 @@ eval $(minikube docker-env) # setting minikube docker env
 DOCKER_BUILDKIT=0 docker build \
     -t "hbernardo-users:$(git rev-parse --short HEAD)" \
     -t "hbernardo-users:latest" \
-    -f go-src/Dockerfile .
+    .
 ```
 
 #### Deploying the Helm Chart
