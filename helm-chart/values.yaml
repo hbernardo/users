@@ -40,7 +40,7 @@ health:
 environment:
   HEALTH_CHECK_PORT: 8081
   PORT: 8080
-  MODE: release
+  LOG_LEVEL: error
 
 
 
