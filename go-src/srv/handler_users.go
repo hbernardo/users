@@ -20,9 +20,12 @@ type (
 )
 
 const (
-	maxNumberOfUsersInResponse = 1000
+	// maxUsersLimit sets the maximum number of users
+	// that the client can request to the server
+	maxUsersLimit = 1000
 )
 
+// NewUsersHandler creates a new users handler, receives the users service as parameter
 func NewUsersHandler(usersSvc usersService) *usersHandler {
 	handler := http.NewServeMux()
 
@@ -31,14 +34,18 @@ func NewUsersHandler(usersSvc usersService) *usersHandler {
 		usersSvc,
 	}
 
+	// route for multiple users fetching, receiving pagination parameters
 	handler.HandleFunc("/users", h.handleGetUsers)
+	// route for single user fetching, receiving the user id as URL parameter
 	handler.HandleFunc("/users/", h.handleGetUser)
 
 	return h
 }
 
+// handleGetUsers is the HTTP handler function for getting multiples based on pagination querystrings (limit and offset)
 func (h *usersHandler) handleGetUsers(w http.ResponseWriter, req *http.Request) {
-	limit, offset, err := getAndValidatePaginationParams(req.URL.Query())
+	// getting and validating pagination parameters
+	limit, offset, err := getAndValidatePaginationParams(req.URL.Query(), maxUsersLimit)
 	if err != nil {
 		writeError(w, err)
 		return
@@ -53,7 +60,9 @@ func (h *usersHandler) handleGetUsers(w http.ResponseWriter, req *http.Request) 
 	writeJSON(w, http.StatusOK, users)
 }
 
+// handleGetUser is the HTTP handler function for getting a single user by its ID (got from URL parameter)
 func (h *usersHandler) handleGetUser(w http.ResponseWriter, req *http.Request) {
+	// getting user id from URL parameter
 	userID, err := getURLPathParam(req.URL.Path, "users")
 	if err != nil {
 		writeError(w, err)

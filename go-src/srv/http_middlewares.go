@@ -11,6 +11,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
+// withMiddlewares creates a new HTTP handler with the chain of middlewares received as parameter
 func withMiddlewares(h http.Handler, middlewares ...(func(next http.Handler) http.Handler)) http.Handler {
 	for _, middleware := range middlewares {
 		h = middleware(h)
@@ -18,8 +19,11 @@ func withMiddlewares(h http.Handler, middlewares ...(func(next http.Handler) htt
 	return h
 }
 
+// PanicRecoveryMiddleware treats any panic error that happens after this middleware
+// and writes correct error to HTTP response and log
 func PanicRecoveryMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// defering panic recover logic (i.e. catching it after next handler(s) execution)
 		defer func() {
 			rec := recover()
 			if rec != nil {
@@ -37,6 +41,8 @@ func PanicRecoveryMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// ETagMiddleware adds ETag header for proper client caching based on a version received as parameter (e.g. the users data version)
+// and returns 304 status code (not modified) if client requests the same version
 func ETagMiddleware(version string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -52,6 +58,7 @@ func ETagMiddleware(version string) func(next http.Handler) http.Handler {
 	}
 }
 
+// CORSMiddleware sets proper CORS headers and handles the preflight OPTIONS request
 func CORSMiddleware(allowOrigin string, allowMethods []string, allowHeaders []string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -59,6 +66,7 @@ func CORSMiddleware(allowOrigin string, allowMethods []string, allowHeaders []st
 			w.Header().Set("Access-Control-Allow-Methods", strings.Join(allowMethods, ","))
 			w.Header().Set("Access-Control-Allow-Headers", strings.Join(allowHeaders, ","))
 
+			// just returns if it's a prefligh request
 			if r.Method == http.MethodOptions {
 				return
 			}
@@ -68,6 +76,11 @@ func CORSMiddleware(allowOrigin string, allowMethods []string, allowHeaders []st
 	}
 }
 
+// RateLimiterMiddleware blocks the user from making a big amount of requests in a small amount of time,
+// receives some configuration:
+// - maxFrequency: maximum allowed frequency (requests per second)
+// - burstSize: maximum bursts permitted
+// - memoryDuration: duration of users rate limiter memory before it's cleaned
 func RateLimiterMiddleware(maxFrequency int, burstSize int, memoryDuration time.Duration) func(next http.Handler) http.Handler {
 	// Using rate limiter from package "golang.org/x/time/rate"
 	rateLimiterPerUser := make(map[string]*rate.Limiter)
@@ -113,6 +126,7 @@ func RateLimiterMiddleware(maxFrequency int, burstSize int, memoryDuration time.
 
 			// Checking user rate limiter
 			if !userRateLimiter.Allow() {
+				// returns status code 429 ("too many requests") if rate limit is reached
 				writeError(w, &httpError{
 					StatusCode: http.StatusTooManyRequests,
 					Message:    "Too many requests",

@@ -1,5 +1,6 @@
 package lib
 
+// User represents the user model, contains JSON tags for responses
 type User struct {
 	ID           string `json:"id"`
 	FirstName    string `json:"first_name"`

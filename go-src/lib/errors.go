@@ -3,8 +3,8 @@ package lib
 import "errors"
 
 var (
-	// ErrNotFound error
+	// ErrNotFound represents not found error
 	ErrNotFound = errors.New("not found")
-	// ErrPreconditionFailed error
+	// ErrPreconditionFailed represents precondition failed error
 	ErrPreconditionFailed = errors.New("precondition failed")
 )

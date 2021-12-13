@@ -15,7 +15,7 @@ type (
 	}
 )
 
-// NewHTTPServer creates a new HTTP server
+// NewHTTPServer creates a new HTTP server, receives port, http handler and optional middlewares for the handler
 func NewHTTPServer(port int, handler http.Handler, middlewares ...(func(next http.Handler) http.Handler)) *httpServer {
 	return &httpServer{
 		srv: &http.Server{
