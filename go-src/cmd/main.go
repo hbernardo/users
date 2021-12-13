@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"crypto/sha1"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/signal"
@@ -86,7 +88,7 @@ func runHTTP(cmd *cobra.Command, args []string) error {
 	}
 
 	// Reading users data file
-	usersData, err := readUsersDataJSONFile()
+	usersData, usersDataVersion, err := readUsersDataJSONFile()
 	if err != nil {
 		return err
 	}
@@ -98,6 +100,7 @@ func runHTTP(cmd *cobra.Command, args []string) error {
 				infra.NewUsersRepo(usersData),
 			),
 		),
+		srv.ETagMiddleware(usersDataVersion),
 		srv.CORSMiddleware(
 			config.CORSAllowOrigin,
 			config.CORSAllowMethods,
@@ -139,26 +142,28 @@ func configureLog(logLevel string) error {
 	return nil
 }
 
-func readUsersDataJSONFile() ([]lib.User, error) {
+func readUsersDataJSONFile() ([]lib.User, string, error) {
 	jsonFile, err := os.Open(usersDataFilePath)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	defer jsonFile.Close()
 
 	jsonBytes, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
+
+	dataVersion := fmt.Sprintf("%x", sha1.Sum(jsonBytes))
 
 	var usersData []lib.User
 
 	err = json.Unmarshal(jsonBytes, &usersData)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	return usersData, nil
+	return usersData, dataVersion, nil
 }
 
 func waitSignal() os.Signal {

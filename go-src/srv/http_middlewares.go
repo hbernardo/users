@@ -37,6 +37,21 @@ func PanicRecoveryMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func ETagMiddleware(version string) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("ETag", version)
+
+			if r.Header.Get("If-None-Match") == version {
+				w.WriteHeader(http.StatusNotModified)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 func CORSMiddleware(allowOrigin string, allowMethods []string, allowHeaders []string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
