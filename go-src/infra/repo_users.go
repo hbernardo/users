@@ -16,16 +16,17 @@ type (
 
 // NewUsersRepo creates a new users repo, receives the users data as parameter
 func NewUsersRepo(usersData []lib.User) *usersRepo {
-	// creating a map for direct/instant access when querying a single user
-	usersMap := make(map[string]*lib.User, len(usersData))
-	for _, user := range usersData {
-		usersMap[user.ID] = &user
+	repo := &usersRepo{
+		usersData: usersData,
+		usersMap:  make(map[string]*lib.User, len(usersData)),
 	}
 
-	return &usersRepo{
-		usersData,
-		usersMap,
+	// map for direct/instant access when querying a single user
+	for i, user := range repo.usersData {
+		repo.usersMap[user.ID] = &(repo.usersData[i])
 	}
+
+	return repo
 }
 
 // GetUsers gets users based on pagination (limit and offset)
