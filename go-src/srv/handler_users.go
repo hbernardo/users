@@ -35,9 +35,9 @@ func NewUsersHandler(usersSvc usersService) *usersHandler {
 	}
 
 	// route for multiple users fetching, receiving pagination parameters
-	handler.HandleFunc("/users", h.handleGetUsers)
+	handler.HandleFunc("/v1/users", h.handleGetUsers)
 	// route for single user fetching, receiving the user id as URL parameter
-	handler.HandleFunc("/users/", h.handleGetUser)
+	handler.HandleFunc("/v1/users/", h.handleGetUser)
 
 	return h
 }
