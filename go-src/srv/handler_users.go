@@ -44,6 +44,15 @@ func NewUsersHandler(usersSvc usersService) *usersHandler {
 
 // handleGetUsers is the HTTP handler function for getting multiples based on pagination querystrings (limit and offset)
 func (h *usersHandler) handleGetUsers(w http.ResponseWriter, req *http.Request) {
+	// validating GET method
+	if req.Method != http.MethodGet {
+		writeError(w, &httpError{
+			StatusCode: http.StatusMethodNotAllowed,
+			Message:    "method not allowed",
+		})
+		return
+	}
+
 	// getting and validating pagination parameters
 	limit, offset, err := getAndValidatePaginationParams(req.URL.Query(), maxUsersLimit)
 	if err != nil {
@@ -62,6 +71,15 @@ func (h *usersHandler) handleGetUsers(w http.ResponseWriter, req *http.Request) 
 
 // handleGetUser is the HTTP handler function for getting a single user by its ID (got from URL parameter)
 func (h *usersHandler) handleGetUser(w http.ResponseWriter, req *http.Request) {
+	// validating GET method
+	if req.Method != http.MethodGet {
+		writeError(w, &httpError{
+			StatusCode: http.StatusMethodNotAllowed,
+			Message:    "method not allowed",
+		})
+		return
+	}
+
 	// getting user id from URL parameter
 	userID, err := getURLPathParam(req.URL.Path, "users")
 	if err != nil {
