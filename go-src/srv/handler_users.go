@@ -42,7 +42,7 @@ func NewUsersHandler(usersSvc usersService) *usersHandler {
 	return h
 }
 
-// handleGetUsers is the HTTP handler function for getting multiples based on pagination querystrings (limit and offset)
+// handleGetUsers is the HTTP handler function for getting multiple users based on pagination querystrings (limit and offset)
 func (h *usersHandler) handleGetUsers(w http.ResponseWriter, req *http.Request) {
 	// validating GET method
 	if req.Method != http.MethodGet {
