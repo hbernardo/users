@@ -35,9 +35,7 @@ func getURLQueryParam(urlValues url.Values, key string) string {
 	return values[0]
 }
 
-func getAndValidatePaginationParams(req *http.Request) (limit, offset int, err error) {
-	urlQuery := req.URL.Query()
-
+func getAndValidatePaginationParams(urlQuery url.Values) (limit, offset int, err error) {
 	limitStr := getURLQueryParam(urlQuery, "limit")
 	if limitStr == "" { // required param
 		return 0, 0, &httpError{

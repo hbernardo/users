@@ -38,7 +38,7 @@ func NewUsersHandler(usersSvc usersService) *usersHandler {
 }
 
 func (h *usersHandler) handleGetUsers(w http.ResponseWriter, req *http.Request) {
-	limit, offset, err := getAndValidatePaginationParams(req)
+	limit, offset, err := getAndValidatePaginationParams(req.URL.Query())
 	if err != nil {
 		writeError(w, err)
 		return
